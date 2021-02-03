@@ -1,41 +1,39 @@
 <?php
+
 declare(strict_types=1);
 
-namespace League\Pipeline;
+namespace Rockett\Pipeline;
 
-class Pipeline implements PipelineInterface
+use Rockett\Pipeline\Contracts\PipelineContract;
+use Rockett\Pipeline\Processors\{FingersCrossedProcessor, ProcessorContract};
+
+class Pipeline implements PipelineContract
 {
-    /**
-     * @var callable[]
-     */
-    private $stages = [];
+  /**  @var callable[] */
+  private $stages = [];
+  private ProcessorContract $processor;
 
-    /**
-     * @var ProcessorInterface
-     */
-    private $processor;
+  public function __construct(ProcessorContract $processor = null, callable ...$stages)
+  {
+    $this->processor = $processor ?? new FingersCrossedProcessor;
+    $this->stages = $stages;
+  }
 
-    public function __construct(ProcessorInterface $processor = null, callable ...$stages)
-    {
-        $this->processor = $processor ?? new FingersCrossedProcessor;
-        $this->stages = $stages;
-    }
+  public function pipe(callable $stage): PipelineContract
+  {
+    $pipeline = clone $this;
+    $pipeline->stages[] = $stage;
 
-    public function pipe(callable $stage): PipelineInterface
-    {
-        $pipeline = clone $this;
-        $pipeline->stages[] = $stage;
+    return $pipeline;
+  }
 
-        return $pipeline;
-    }
+  public function process($traveler)
+  {
+    return $this->processor->process($traveler, ...$this->stages);
+  }
 
-    public function process($payload)
-    {
-        return $this->processor->process($payload, ...$this->stages);
-    }
-
-    public function __invoke($payload)
-    {
-        return $this->process($payload);
-    }
+  public function __invoke($traveler)
+  {
+    return $this->process($traveler);
+  }
 }
