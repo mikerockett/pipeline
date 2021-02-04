@@ -6,8 +6,8 @@ namespace Rockett\Pipeline\Processors;
 
 class TapProcessor implements ProcessorContract
 {
-  protected ?callable $beforeCallback;
-  protected ?callable $afterCallback;
+  private $beforeCallback;
+  private $afterCallback;
 
   public function __construct(callable $beforeCallback = null, callable $afterCallback = null)
   {

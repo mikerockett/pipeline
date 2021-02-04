@@ -6,7 +6,7 @@ namespace Rockett\Pipeline\Processors;
 
 class InterruptibleProcessor implements ProcessorContract
 {
-  private callable $callback;
+  private $callback;
   private bool $inverseCallbackOutcome = false;
 
   public function __construct(callable $callback)
