@@ -39,11 +39,11 @@
     "nunomaduro/collision": "^5.5"
   },
   "scripts": {
-    "test": [
+    "dump-and-test": [
       "@dump",
-      "@testbench"
+      "@test"
     ],
     "dump": "composer dumpautoload",
-    "testbench": "./vendor/bin/testbench package:test"
+    "test": "./vendor/bin/testbench package:test"
   }
 }
