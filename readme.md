@@ -4,11 +4,11 @@
 [![Software License](https://img.shields.io/badge/release-pending-orange.svg?style=flat-square)](#)
 [![Software License](https://img.shields.io/badge/tests-pending-red.svg?style=flat-square)](#)
 
-This package, forked from [League’s excellent package](https://github.com/thephpleague/pipeline), provides an implementation of the [pipeline pattern](https://en.wikipedia.org/wiki/Pipeline_(software)).
+This package, built atop [League’s excellent package](https://github.com/thephpleague/pipeline), provides an implementation of the [pipeline pattern](https://en.wikipedia.org/wiki/Pipeline_(software)).
 
 ## Pipeline Pattern
 
-The pipeline pattern allows you to easily compose sequential stages by chaining stages. A *pipeline* consists of zero, one or more *stages*. A pipeline can process a payload, known as a *traveler*. When the pipeline is processed, the traveler will be passed to the first stage. From that moment on, the resulting output is passed on from stage to stage.
+The pipeline pattern allows you to easily compose sequential operations by chaining stages. A *pipeline* consists of zero, one or more *stages*. A pipeline can process a payload, known as a *traveler*. When the pipeline is processed, the traveler will be passed to the first stage. From that moment on, the resulting output is passed on from stage to stage.
 
 In the simplest form, the execution-chain can be represented as a `foreach` loop:
 

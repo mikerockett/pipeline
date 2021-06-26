@@ -40,8 +40,8 @@ class InterruptibleProcessor implements ProcessorContract
       $callbackOutcome = $callback($traveler);
 
       $outcomeIsTruthy = $this->inverseCallbackOutcome
-        ? ($callbackOutcome !== true)
-        : ($callbackOutcome === true);
+        ? !$callbackOutcome
+        : !!$callbackOutcome;
 
       if ($outcomeIsTruthy) {
         return $traveler;
