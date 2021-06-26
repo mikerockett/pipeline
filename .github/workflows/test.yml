@@ -1,16 +1,44 @@
-name: Test
-on: [push]
+name: tests
+
+on:
+  - push
+  - pull_request
+
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  tests:
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      matrix:
+        os:
+          - "ubuntu-latest"
+        php:
+          - "7.4"
+          - "8.0"
+        dependencies:
+          - "locked"
+          - "lowest"
+          - "highest"
+        experimental:
+          - false
+
+    name: PHP${{ matrix.php }} on ${{ matrix.os }} (${{ matrix.dependencies }})
+
     steps:
-      - uses: actions/checkout@v2
-      - name: Cache Composer dependencies
-        uses: actions/cache@v2
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
         with:
-          path: /tmp/composer-cache
-          key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
-      - uses: php-actions/composer@v6
+          php-version: ${{ matrix.php }}
+          coverage: none
+
+      - name: Install dependencies
+        uses: ramsey/composer-install@v1
         with:
-          php_version: 7.4
-          command: run test
+          dependency-versions: ${{ matrix.dependencies }}
+          composer-options: "--prefer-dist --no-cache"
+
+      - name: Run tests
+        run: vendor/bin/testbench package:test
