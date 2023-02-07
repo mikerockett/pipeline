@@ -32,11 +32,11 @@
     }
   },
   "require": {
-    "php": ">=7.4"
+    "php": ">=8.1"
   },
   "require-dev": {
-    "orchestra/testbench": "^6.18",
-    "nunomaduro/collision": "^5.5"
+    "orchestra/testbench": "^7.21",
+    "nunomaduro/collision": "^6.4"
   },
   "scripts": {
     "dump-and-test": [

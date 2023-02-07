@@ -1,5 +1,39 @@
 # Changelog
 
+## 3.0.0 - 2023-02-07
+
+### Changed
+
+* **Minimum PHP version is now 8.1**
+* Test workflow updated to run on PHP 8.1 and 8.2 on newer actions
+* Testbench and Collision updated to latest versions
+* Minor code cleanup
+
+## 2.0.2 - 2021-06-26
+
+### Added
+
+* Tests
+* GitHub test workflow
+
+## 2.0.1 - 2021-02-04
+
+### Changed
+
+* Removed `callable` type-hints
+
+## 2.0.0 - 2021-02-03
+
+### Added
+
+* TapProcessor
+* Inverse conditions on interruptible processor
+
+### Changed
+
+* Code re-organized
+* Updated readme with missing documentation and new documentation
+
 ## 1.0.0 - 2018-06-05
 
 ### Added

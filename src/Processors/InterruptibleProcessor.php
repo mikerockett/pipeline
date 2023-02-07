@@ -27,7 +27,6 @@ class InterruptibleProcessor implements ProcessorContract
   public function withInversedConditioner(): self
   {
     $this->inverseCallbackOutcome = true;
-
     return $this;
   }
 

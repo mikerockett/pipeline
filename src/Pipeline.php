@@ -7,14 +7,16 @@ namespace Rockett\Pipeline;
 use Rockett\Pipeline\Contracts\PipelineContract;
 use Rockett\Pipeline\Processors\{FingersCrossedProcessor, ProcessorContract};
 
+/** @property callable[] $stages */
 class Pipeline implements PipelineContract
 {
-  /**  @var callable[] */
-  private $stages = [];
   private ProcessorContract $processor;
+  private array $stages;
 
-  public function __construct(ProcessorContract $processor = null, callable ...$stages)
-  {
+  public function __construct(
+    ProcessorContract $processor = null,
+    callable ...$stages
+  ) {
     $this->processor = $processor ?? new FingersCrossedProcessor;
     $this->stages = $stages;
   }

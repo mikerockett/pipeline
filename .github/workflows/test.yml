@@ -13,8 +13,8 @@ jobs:
         os:
           - "ubuntu-latest"
         php:
-          - "7.4"
-          - "8.0"
+          - "8.1"
+          - "8.2"
         experimental:
           - false
 
@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -31,7 +31,7 @@ jobs:
           coverage: none
 
       - name: Install dependencies
-        uses: ramsey/composer-install@v1
+        uses: ramsey/composer-install@v2
         with:
           composer-options: "--prefer-dist --no-cache"
 

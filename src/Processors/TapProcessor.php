@@ -9,8 +9,10 @@ class TapProcessor implements ProcessorContract
   private $beforeCallback;
   private $afterCallback;
 
-  public function __construct(callable $beforeCallback = null, callable $afterCallback = null)
-  {
+  public function __construct(
+    callable $beforeCallback = null,
+    callable $afterCallback = null
+  ) {
     $this->beforeCallback = $beforeCallback;
     $this->afterCallback = $afterCallback;
   }
@@ -18,14 +20,12 @@ class TapProcessor implements ProcessorContract
   public function beforeEach(callable $callback): self
   {
     $this->beforeCallback = $callback;
-
     return $this;
   }
 
   public function afterEach(callable $callback): self
   {
     $this->beforeCallback = $callback;
-
     return $this;
   }
 
