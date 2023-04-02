@@ -1,9 +1,11 @@
+<!-- exclude-from-website: -->
 # Rockett\Pipeline
 
 ![GitHub License](https://img.shields.io/github/license/mikerockett/pipeline?style=for-the-badge)
 ![Packagist Version](https://img.shields.io/packagist/v/rockett/pipeline?label=Release&style=for-the-badge)
 ![Packagist Downloads](https://img.shields.io/packagist/dm/rockett/pipeline?label=Installs&style=for-the-badge)
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/mikerockett/pipeline/test.yml?label=Tests&style=for-the-badge)
+<!-- /exclude-from-website -->
 
 Built atop [League’s excellent package](https://github.com/thephpleague/pipeline), `Rockett\Pipeline` provides an implementation of the [pipeline pattern](https://en.wikipedia.org/wiki/Pipeline_(software)).
 
