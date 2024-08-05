@@ -2,30 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Rockett\Pipeline\Tests;
-
-use Orchestra\Testbench\TestCase;
 use Rockett\Pipeline\Processors\FingersCrossedProcessor;
 use Rockett\Pipeline\Processors\ProcessorContract;
 
-class FingersCrossedProcessorTest extends TestCase
-{
-  /** @covers FingersCrossedProcessor::class */
-  public function testItImplementsProcessorContract(): void
-  {
-    $processor = new FingersCrossedProcessor;
+test('it implements processor contract', function () {
+  $processor = new FingersCrossedProcessor;
+  expect($processor)->toBeInstanceOf(ProcessorContract::class);
+});
 
-    $this->assertTrue($processor instanceof ProcessorContract);
-  }
-
-  /** @covers FingersCrossedProcessor::class */
-  public function testItProcessesStages(): void
-  {
-    $result = (new FingersCrossedProcessor)->process(
-      1,
-      fn ($traveler): int => $traveler * 2
-    );
-
-    $this->assertEquals(2, $result);
-  }
-}
+test('it processes stages', function () {
+  $result = (new FingersCrossedProcessor)->process(
+    1,
+    fn ($traveler): int => $traveler * 2
+  );
+  expect($result)->toBe(2);
+});

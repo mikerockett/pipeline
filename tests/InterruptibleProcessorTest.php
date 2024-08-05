@@ -2,55 +2,37 @@
 
 declare(strict_types=1);
 
-namespace Rockett\Pipeline\Tests;
-
-use Orchestra\Testbench\TestCase;
 use Rockett\Pipeline\Processors\InterruptibleProcessor;
 use Rockett\Pipeline\Processors\ProcessorContract;
 
-class InterruptibleProcessorTest extends TestCase
-{
-  /** @covers InterruptibleProcessor::class */
-  public function testItImplementsProcessorContract(): void
-  {
-    $processor = new InterruptibleProcessor(fn (): bool => false);
+$stages = [
+  fn ($traveler): int => $traveler + 2,
+  fn ($traveler): int => $traveler * 10,
+  fn ($traveler): int => $traveler * 10
+];
 
-    $this->assertTrue($processor instanceof ProcessorContract);
-  }
+test('it implements processor contract', function () {
+  $processor = new InterruptibleProcessor(fn (): bool => false);
+  expect($processor)->toBeInstanceOf(ProcessorContract::class);
+});
 
-  private static function stages(): array
-  {
-    return [
-      fn ($traveler): int => $traveler + 2,
-      fn ($traveler): int => $traveler * 10,
-      fn ($traveler): int => $traveler * 10
-    ];
-  }
+test('it interrupts processing', function () use ($stages) {
+  $result = (new InterruptibleProcessor(
+    fn ($traveler): bool => $traveler > 10
+  ))->process(5, ...$stages);
+  expect($result)->toBe(70);
+});
 
-  /** @covers InterruptibleProcessor::class */
-  public function testItInterruptsProcessing(): void
-  {
-    $result = (new InterruptibleProcessor(fn ($traveler): bool => $traveler > 10))
-      ->process(5, ...static::stages());
+test('it interrupts processing using continue when', function () use ($stages) {
+  $result = InterruptibleProcessor::continueWhen(
+    fn ($traveler): bool => $traveler < 10
+  )->process(5, ...$stages);
+  expect($result)->toBe(70);
+});
 
-    $this->assertEquals(70, $result);
-  }
-
-  /** @covers InterruptibleProcessor::class */
-  public function testItInterruptsProcessingUsingContinueWhen(): void
-  {
-    $result = InterruptibleProcessor::continueWhen(fn ($traveler): bool => $traveler < 10)
-      ->process(5, ...static::stages());
-
-    $this->assertEquals(70, $result);
-  }
-
-  /** @covers InterruptibleProcessor::class */
-  public function testItInterruptsProcessingUsingContinueUnless(): void
-  {
-    $result = InterruptibleProcessor::continueUnless(fn ($traveler): bool => $traveler > 10)
-      ->process(5, ...static::stages());
-
-    $this->assertEquals(70, $result);
-  }
-}
+test('it interrupts processing using continue unless', function () use ($stages) {
+  $result = InterruptibleProcessor::continueUnless(
+    fn ($traveler): bool => $traveler > 10
+  )->process(5, ...$stages);
+  expect($result)->toBe(70);
+});

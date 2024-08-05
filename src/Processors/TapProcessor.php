@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Rockett\Pipeline\Processors;
 
+/**
+ * @template T
+ * @implements ProcessorContract<T>
+ */
 class TapProcessor implements ProcessorContract
 {
   private $beforeCallback;
@@ -20,15 +24,22 @@ class TapProcessor implements ProcessorContract
   public function beforeEach(callable $callback): self
   {
     $this->beforeCallback = $callback;
+
     return $this;
   }
 
   public function afterEach(callable $callback): self
   {
     $this->beforeCallback = $callback;
+
     return $this;
   }
 
+  /**
+   * @param T $traveler
+   * @param callable ...$stages
+   * @return T
+   */
   public function process($traveler, callable ...$stages)
   {
     $beforeCallback = $this->beforeCallback;

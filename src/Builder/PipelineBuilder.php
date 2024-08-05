@@ -16,6 +16,7 @@ class PipelineBuilder implements PipelineBuilderContract
   public function add(callable $stage): PipelineBuilderContract
   {
     $this->stages[] = $stage;
+
     return $this;
   }
 

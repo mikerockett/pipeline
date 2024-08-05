@@ -2,47 +2,28 @@
 
 declare(strict_types=1);
 
-namespace Rockett\Pipeline\Tests;
-
-use Orchestra\Testbench\TestCase;
-use ReflectionClass;
 use Rockett\Pipeline\Builder\PipelineBuilder;
 use Rockett\Pipeline\Builder\PipelineBuilderContract;
 
-class PipelineBuilderTest extends TestCase
-{
-  /** @covers PipelineBuilder::class */
-  public function testItImplementsPipelineBuilderContract(): void
-  {
-    $pipelineBuilder = new PipelineBuilder;
+test('it implements pipeline builder contract', function () {
+  $pipelineBuilder = new PipelineBuilder;
+  expect($pipelineBuilder)->toBeInstanceOf(PipelineBuilderContract::class);
+});
 
-    $this->assertTrue($pipelineBuilder instanceof PipelineBuilderContract);
-  }
+test('it instantiates with private properties', function () {
+  $pipelineBuilder = new PipelineBuilder;
+  $instanceReflection = new ReflectionClass($pipelineBuilder);
+  expect($instanceReflection->hasProperty($stagesProperty = 'stages'))->toBeTrue();
+  expect($instanceReflection->getProperty($stagesProperty)->isPrivate())->toBeTrue();
+});
 
-  /** @covers PipelineBuilder::class */
-  public function testItInstantiatesWithPrivateProperties(): void
-  {
-    $pipelineBuilder = new PipelineBuilder;
-    $instanceReflection = new ReflectionClass($pipelineBuilder);
+test('it collects stages fluently', function () {
+  $pipelineBuilder = new PipelineBuilder;
+  expect($pipelineBuilder->add(fn ($traveler): int => $traveler * 2))->toBe($pipelineBuilder);
+});
 
-    $this->assertTrue($instanceReflection->hasProperty($stagesProperty = 'stages'));
-    $this->assertTrue($instanceReflection->getProperty($stagesProperty)->isPrivate());
-  }
-
-  /** @covers PipelineBuilder::class */
-  public function testItCollectsStagesFluently(): void
-  {
-    $pipelineBuilder = new PipelineBuilder;
-
-    $this->assertTrue($pipelineBuilder->add(fn (): int => 2) === $pipelineBuilder);
-  }
-
-  /** @covers PipelineBuilder::class */
-  public function testItBuildsAndProcessesPipelinesFromStages(): void
-  {
-    $pipelineBuilder = (new PipelineBuilder)->add(fn ($traveler): int => $traveler * 2);
-    $result = $pipelineBuilder->build()->process(4);
-
-    $this->assertEquals(8, $result);
-  }
-}
+test('it builds and processes pipelines from stages', function () {
+  $pipelineBuilder = (new PipelineBuilder)->add(fn ($traveler): int => $traveler * 2);
+  $result = $pipelineBuilder->build()->process(4);
+  expect($result)->toBe(8);
+});

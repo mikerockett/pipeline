@@ -2,50 +2,47 @@
 
 declare(strict_types=1);
 
-namespace Rockett\Pipeline\Tests;
-
-use Orchestra\Testbench\TestCase;
-use Rockett\Pipeline\Processors\TapProcessor;
 use Rockett\Pipeline\Processors\ProcessorContract;
+use Rockett\Pipeline\Processors\TapProcessor;
 
-class TapProcessorTest extends TestCase
-{
-  static $beforeLogs = [];
-  static $afterLogs = [];
-  static $fingersCrossedLogs = [];
+$stages = [
+  fn ($traveler): int => $traveler + 2,
+  fn ($traveler): int => $traveler * 10,
+  fn ($traveler): int => $traveler * 10
+];
 
-  /** @covers TapProcessor::class */
-  public function testItImplementsProcessorContract(): void
-  {
-    $processor = new TapProcessor();
+test('it implements processor contract', function () {
+  $tapProcessor = new TapProcessor();
 
-    $this->assertTrue($processor instanceof ProcessorContract);
-  }
+  expect($tapProcessor)->toBeInstanceOf(
+    ProcessorContract::class
+  );
+});
 
-  private static function stages(): array
-  {
-    return [
-      fn ($traveler): int => $traveler + 2,
-      fn ($traveler): int => $traveler * 10,
-      fn ($traveler): int => $traveler * 10
-    ];
-  }
+test('it handles before callbacks', function () use ($stages) {
+  $beforeLogs = [];
 
-  /** @covers Pipeline::class */
-  public function testItHandlesBeforeCallbacks(): void
-  {
-    (new TapProcessor(fn ($traveler) => static::$beforeLogs[] = $traveler))
-      ->process(1, ...static::stages());
+  $tapProcessor = new TapProcessor(
+    beforeCallback: function ($traveler) use (&$beforeLogs) {
+      $beforeLogs[] = $traveler;
+    }
+  );
 
-    $this->assertEquals([1, 3, 30], static::$beforeLogs);
-  }
+  $tapProcessor->process(1, ...$stages);
 
-  /** @covers Pipeline::class */
-  public function testItHandlesAfterCallbacks(): void
-  {
-    (new TapProcessor(null, fn ($traveler) => static::$afterLogs[] = $traveler))
-      ->process(1, ...static::stages());
+  expect($beforeLogs)->toBe([1, 3, 30]);
+});
 
-    $this->assertEquals([3, 30, 300], static::$afterLogs);
-  }
-}
+test('it handles after callbacks', function () use ($stages) {
+  $afterLogs = [];
+
+  $tapProcessor = new TapProcessor(
+    afterCallback: function ($traveler) use (&$afterLogs) {
+      $afterLogs[] = $traveler;
+    }
+  );
+
+  $tapProcessor->process(1, ...$stages);
+
+  expect($afterLogs)->toBe([3, 30, 300]);
+});

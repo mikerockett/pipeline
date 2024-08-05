@@ -19,7 +19,7 @@ In the simplest form, the execution-chain can be represented as a `foreach` loop
 $output = $traveler;
 
 foreach ($stages as $stage) {
-    $output = $stage($output);
+  $output = $stage($output);
 }
 
 return $output;
@@ -108,9 +108,9 @@ use Rockett\Pipeline\Builder\PipelineBuilder;
 
 // Prepare the builder
 $pipelineBuilder = (new PipelineBuilder)
-    ->add(new LogicalStage)
-    ->add(new AnotherStage)
-    ->add(new FinalStage);
+  ->add(new LogicalStage)
+  ->add(new AnotherStage)
+  ->add(new FinalStage);
 
 // Do other work …
 
@@ -209,7 +209,7 @@ $processor = (new TapProcessor)
   ->afterEach(/** callable **/);
 ```
 
-If you are using PHP 8 or higher, it is encouraged that you use [named arguments](https://stitcher.io/blog/php-8-named-arguments) instead:
+However, it is encouraged that you use [named arguments](https://stitcher.io/blog/php-8-named-arguments):
 
 ```php
 $processor = new TapProcessor(

@@ -7,21 +7,26 @@ namespace Rockett\Pipeline;
 use Rockett\Pipeline\Contracts\PipelineContract;
 use Rockett\Pipeline\Processors\{FingersCrossedProcessor, ProcessorContract};
 
-/** @property callable[] $stages */
+/**
+ * @template T
+ * @implements PipelineContract<T>
+ */
 class Pipeline implements PipelineContract
 {
   private ProcessorContract $processor;
+
+  /** @var callable[] */
   private array $stages;
 
   public function __construct(
-    ProcessorContract $processor = null,
+    ?ProcessorContract $processor = null,
     callable ...$stages
   ) {
-    $this->processor = $processor ?? new FingersCrossedProcessor;
+    $this->processor = $processor ?? new FingersCrossedProcessor();
     $this->stages = $stages;
   }
 
-  public function pipe(callable $stage): PipelineContract
+  public function pipe(callable $stage): self
   {
     $pipeline = clone $this;
     $pipeline->stages[] = $stage;
@@ -29,12 +34,20 @@ class Pipeline implements PipelineContract
     return $pipeline;
   }
 
-  public function process($traveler)
+  /**
+   * @param T $traveler
+   * @return T
+   */
+  public function process($traveler): mixed
   {
     return $this->processor->process($traveler, ...$this->stages);
   }
 
-  public function __invoke($traveler)
+  /**
+   * @param T $traveler
+   * @return T
+   */
+  public function __invoke($traveler): mixed
   {
     return $this->process($traveler);
   }

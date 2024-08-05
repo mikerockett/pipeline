@@ -1,5 +1,14 @@
 # Changelog
 
+## 4.0.0 - Unreleased
+
+### Changed
+
+* **Minimum PHP version is now 8.2**
+* Removed Orchestra Testbench in favor of PestPHP
+* Updated nunomaduro/collision to ^8.4
+* Added generic typing information across the package
+
 ## 3.0.0 - 2023-02-07
 
 ### Changed
