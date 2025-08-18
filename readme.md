@@ -1,13 +1,44 @@
-<!-- exclude-from-website: -->
 # Rockett\Pipeline
 
 ![GitHub License](https://img.shields.io/github/license/mikerockett/pipeline?style=for-the-badge)
 ![Packagist Version](https://img.shields.io/packagist/v/rockett/pipeline?label=Release&style=for-the-badge)
 ![Packagist Downloads](https://img.shields.io/packagist/dm/rockett/pipeline?label=Installs&style=for-the-badge)
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/mikerockett/pipeline/test.yml?label=Tests&style=for-the-badge)
-<!-- /exclude-from-website -->
 
-Built atop [League’s excellent package](https://github.com/thephpleague/pipeline), `Rockett\Pipeline` provides an implementation of the [pipeline pattern](https://en.wikipedia.org/wiki/Pipeline_(software)).
+Built atop [League's excellent package](https://github.com/thephpleague/pipeline), `Rockett\Pipeline` provides an implementation of the [pipeline pattern](https://en.wikipedia.org/wiki/Pipeline_(software)) with additional processors for **conditional interruption** and **stage tapping**.
+
+## Requirements
+
+- PHP 8.3+
+
+## Installation
+
+```bash
+composer require rockett/pipeline
+```
+
+## Quick Start
+
+```php
+use Rockett\Pipeline\Pipeline;
+
+$pipeline = (new Pipeline)
+    ->pipe(fn($x) => $x * 2)
+    ->pipe(fn($x) => $x + 1);
+
+echo $pipeline->process(10); // Outputs: 21
+```
+
+## Table of Contents
+
+- [Pipeline Pattern](#pipeline-pattern)
+- [Immutability](#immutability)
+- [Usage](#usage)
+- [Class-based stages](#class-based-stages)
+- [Re-usability](#re-usability)
+- [Pipeline Builders](#pipeline-builders)
+- [Processors](#processors)
+- [Handling Exceptions](#handling-exceptions)
 
 ## Pipeline Pattern
 
@@ -37,7 +68,7 @@ Pipelines are implemented as immutable stage-chains, contracted by the `Pipeline
 
 ## Usage
 
-Operations in a pipeline (stages) can accept anything from the pipeline that satisfies the `callable` type-hint. So closures and anything that’s invokable will work.
+Operations in a pipeline (stages) can accept anything from the pipeline that satisfies the `callable` type-hint. So closures and anything that's invokable will work.
 
 ```php
 $pipeline = (new Pipeline)->pipe(static function ($traveler) {
@@ -120,68 +151,60 @@ $pipeline = $pipelineBuilder->build();
 
 ## Processors
 
-When stages are piped through a pipeline, they are done so using a processor, which is responsible for iterating through each stage and piping it into the owning pipeline. There are three available processors:
+**This is where Rockett\Pipeline extends League's package** – when stages are piped through a pipeline, they are done so using a processor, which is responsible for iterating through each stage and piping it into the owning pipeline. There are four available processors:
 
 * `FingersCrossedProcessor` (this is the default)
-* `InterruptibleProcessor`
-* `TapProcessor`
+* `InterruptibleProcessor` – Exit pipelines early based on conditions
+* `TapProcessor` – Execute callbacks before/after each stage (requires at least one callback)
+* `InterruptibleTapProcessor` – Combines both interruption and tapping (requires at least one tap callback)
 
-It goes without saying that the default processor only iterates and pipes stages. It does nothing else, and there is no way to exit the pipeline without throwing an exception.
+The default processor only iterates and pipes stages. It does nothing else, and there is no way to exit the pipeline without throwing an exception.
 
 ### Exiting pipelines early
 
-The `InterruptibleProcessor`, on the other hand, provides a mechanism that allows you to exit the pipeline early, if so required. This is done by way of a `callable` that is invoked at every stage as a condition to continuing the pipeline:
+The `InterruptibleProcessor` provides a mechanism that allows you to exit the pipeline early, if so required. This is done by way of a `callable` that is invoked at every stage as a condition to continuing the pipeline:
 
 ```php
 use Rockett\Pipeline\Processors\InterruptibleProcessor;
 
 $processor = new InterruptibleProcessor(
-  static fn ($traveler) => $traveler->somethingIsntRight()
+  fn($traveler) => $traveler->hasError()
 );
 
 $pipeline = (new Pipeline($processor))
-  ->pipe(new SafeStage)
-  ->pipe(new UnsafeStage)
-  ->pipe(new AnotherSafeStage);
+  ->pipe(new ValidateInput)
+  ->pipe(new ProcessData)
+  ->pipe(new SaveToDatabase);
 
-$output = $pipeline->process($traveler);
+$output = $pipeline->process($request);
 ```
 
-In this example, the callable passed to the processor will check to see if something isn’t right and, if so, it will return `true`, causing the processor exit the pipeline and return the traveler as the output.
+In this example, the callable will check if the traveler has an error and, if so, it will return `true`, causing the processor to exit the pipeline early and return the current traveler as the output.
 
-You can also use the `continueUnless` helper to instantiate the interruptible processor:
+**Helper methods:**
 
 ```php
+// Exit when condition is true
 $processor = InterruptibleProcessor::continueUnless(
-  static fn ($traveler) => $traveler->somethingIsntRight()
+  fn($traveler) => $traveler->hasError()
 );
-```
 
-If you would like to reverse the condition and only continue when the callable returns true, you can use the `continueWhen` helper instead:
-
-```php
+// Exit when condition becomes false
 $processor = InterruptibleProcessor::continueWhen(
-  static fn ($traveler) => $traveler->everythingIsFine()
+  fn($traveler) => $traveler->isValid()
 );
 ```
 
 ### Invoking actions on each stage
 
-Using the `TapProcessor`, you can invoke an action before and/or after a stage is piped through a pipeline. This can be useful if you would like to handle common side-effects outside of each stage, such as logging or broadcasting.
-
-The processor takes two callables:
+Using the `TapProcessor`, you can invoke an action before and/or after a stage is piped through a pipeline. This is useful for cross-cutting concerns like logging, metrics, or debugging.
 
 ```php
 use Rockett\Pipeline\Processors\TapProcessor;
 
-// Define and instantiate a $logger and a $broadcaster …
-
 $processor = new TapProcessor(
-  // $beforeEach, called before a stage is piped
-  static fn ($traveler) => $logger->info('Traveller passing through pipeline:', $traveler->toArray()),
-
-  // $afterEach, called after a stage is piped and the output captured
-  static fn ($traveler) => $broadcaster->broadcast($users, 'Something happened', $traveler)
+  beforeCallback: fn($traveler) => $logger->info('Processing:', $traveler->toArray()),
+  afterCallback: fn($traveler) => $metrics->increment('pipeline.stage.completed')
 );
 
 $pipeline = (new Pipeline($processor))
@@ -192,31 +215,45 @@ $pipeline = (new Pipeline($processor))
 $output = $pipeline->process($traveler);
 ```
 
-Both of these callables are **optional**. By excluding both, the processor will act in the exact same way as the default `FingersCrossedProcessor`.
-
-If you would like to pass only one callback, then you can use the helper methods:
-
-```php
-$processor = (new TapProcessor)->beforeEach(/** callable **/); // or …
-$processor = (new TapProcessor)->afterEach(/** callable **/);
-```
-
-You can also chain them as an alternative to using the constructor:
+**At least one callback is required.** You can also use fluent methods:
 
 ```php
 $processor = (new TapProcessor)
-  ->beforeEach(/** callable **/)
-  ->afterEach(/** callable **/);
+  ->beforeEach(fn($traveler) => $logger->debug('Before:', $traveler))
+  ->afterEach(fn($traveler) => $logger->debug('After:', $traveler));
 ```
 
-However, it is encouraged that you use [named arguments](https://stitcher.io/blog/php-8-named-arguments):
+### Combining interruption and tapping
+
+The `InterruptibleTapProcessor` combines both features:
 
 ```php
-$processor = new TapProcessor(
-  beforeEach: /** optional callable **/,
-  afterEach: /** optional callable **/,
-)
+use Rockett\Pipeline\Processors\InterruptibleTapProcessor;
+
+$processor = new InterruptibleTapProcessor(
+  interruptCallback: fn($traveler) => $traveler->shouldStop(),
+  beforeCallback: fn($traveler) => $logger->info('Processing stage'),
+  afterCallback: fn($traveler) => $metrics->increment('stage.completed')
+);
+
+// Or using static factory methods (tap callbacks required)
+$processor = InterruptibleTapProcessor::continueUnless(
+  fn($traveler) => $traveler->hasError(),
+  beforeCallback: fn($traveler) => $logger->debug('Before stage')
+);
+
+// Or using fluent interface
+$processor = InterruptibleTapProcessor::continueWhen(
+  fn($traveler) => $traveler->isValid(),
+  afterCallback: fn($traveler) => $logger->debug('After stage')
+)->beforeEach(fn($traveler) => $logger->debug('Before stage'));
 ```
+
+> [!NOTE]
+> This will likely become the default processor in a future release.
+
+> [!TIP]
+> The `InterruptibleTapProcessor` is particularly useful for complex pipelines where you need both conditional logic and observability.
 
 ## Handling Exceptions
 
@@ -234,6 +271,12 @@ try {
 } catch(LogicException $e) {
   // Handle the exception.
 }
+```
+
+## Testing
+
+```bash
+composer test
 ```
 
 ## License

@@ -20,7 +20,7 @@ class PipelineBuilder implements PipelineBuilderContract
     return $this;
   }
 
-  public function build(ProcessorContract $processor = null): PipelineContract
+  public function build(ProcessorContract|null $processor = null): PipelineContract
   {
     return new Pipeline($processor, ...$this->stages);
   }

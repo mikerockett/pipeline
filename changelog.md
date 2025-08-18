@@ -1,13 +1,19 @@
 # Changelog
 
-## 4.0.0 - Unreleased
+## 4.0.0 - 2025-08-18
+
+### Added
+
+* `InterruptipleTapProcessor`, which implements both `InterruptipleProcessor` and `TapProcessor`
+* Added generic typing information across the package
 
 ### Changed
 
-* **Minimum PHP version is now 8.2**
-* Removed Orchestra Testbench in favor of PestPHP
-* Updated nunomaduro/collision to ^8.4
-* Added generic typing information across the package
+* **Minimum PHP version is now 8.3**
+* Test framework is now Pest
+* Updated `nunomaduro/collision` to ^8.0
+* Tests are now a bit more exhaustive
+* `TapProcessor` now requires at least one callback when instantiated.
 
 ## 3.0.0 - 2023-02-07
 
