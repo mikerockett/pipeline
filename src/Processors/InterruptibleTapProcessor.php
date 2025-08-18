@@ -28,6 +28,12 @@ class InterruptibleTapProcessor implements ProcessorContract
       throw new InvalidArgumentException('$callback must be callable');
     }
 
+    if ($beforeCallback === null && $afterCallback === null) {
+      throw new InvalidArgumentException(
+        'At least one of $beforeCallback and $afterCallback must be provided'
+      );
+    }
+
     if ($beforeCallback && !is_callable($beforeCallback)) {
       throw new InvalidArgumentException('$beforeCallback must be callable');
     }
@@ -37,14 +43,28 @@ class InterruptibleTapProcessor implements ProcessorContract
     }
   }
 
-  public static function continueUnless(callable $callback): self
-  {
-    return new static($callback);
+  public static function continueUnless(
+    callable $callback,
+    callable|null $beforeCallback = null,
+    callable|null $afterCallback = null
+  ): self {
+    return new static(
+      $callback,
+      $beforeCallback,
+      $afterCallback
+    );
   }
 
-  public static function continueWhen(callable $callback): self
-  {
-    return (new static($callback))->withInversedConditioner();
+  public static function continueWhen(
+    callable $callback,
+    callable|null $beforeCallback = null,
+    callable|null $afterCallback = null
+  ): self {
+    return (new static(
+      $callback,
+      $beforeCallback,
+      $afterCallback
+    ))->withInversedConditioner();
   }
 
   public function beforeEach(callable $callback): self

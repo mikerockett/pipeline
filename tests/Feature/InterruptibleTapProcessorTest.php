@@ -18,7 +18,10 @@ beforeEach(function () use (&$tapResults) {
 });
 
 it('implements processor contract', function () {
-  $processor = new InterruptibleTapProcessor(fn(): bool => false);
+  $processor = new InterruptibleTapProcessor(
+    fn(): bool => false,
+    fn($x) => null
+  );
   expect($processor)->toBeInstanceOf(ProcessorContract::class);
 });
 
@@ -50,16 +53,23 @@ it('throws exception when after callback is not callable', function () {
   '$afterCallback must be callable'
 );
 
-it('allows both tap callbacks to be null', function () use ($stages) {
-  $processor = new InterruptibleTapProcessor(fn(): bool => false);
+it('throws exception when both tap callbacks are null', function () {
+  new InterruptibleTapProcessor(fn(): bool => false);
+})->throws(
+  InvalidArgumentException::class,
+  'At least one of $beforeCallback and $afterCallback must be provided'
+);
+
+it('processes with interruption and before callback', function () use ($stages, &$tapResults) {
+  $processor = new InterruptibleTapProcessor(
+    fn(): bool => false,
+    function ($traveler) use (&$tapResults) {
+      $tapResults[] = "before: $traveler";
+    }
+  );
   $result = $processor->process(5, ...$stages);
   expect($result)->toBe(700);
-});
-
-it('processes with interruption only', function () use ($stages) {
-  $processor = new InterruptibleTapProcessor(fn($traveler): bool => $traveler > 10);
-  $result = $processor->process(5, ...$stages);
-  expect($result)->toBe(70);
+  expect($tapResults)->toBe(['before: 5', 'before: 7', 'before: 70']);
 });
 
 it('processes with before callback only', function () use ($stages, &$tapResults) {
@@ -118,19 +128,17 @@ it('uses inverted conditioner correctly', function () use ($stages, &$tapResults
 
   $result = $processor->process(5, ...$stages);
 
-  // With inversion: continue when < 100 (true inverted = false = continue)
-  // Stop when >= 100 (false inverted = true = stop)
-  // So 700 >= 100, stop at 700
   expect($result)->toBe(700);
   expect($tapResults)->toBe(['before: 5', 'before: 7', 'before: 70']);
 });
 
 it('creates processor with continueUnless static method', function () use ($stages, &$tapResults) {
   $processor = InterruptibleTapProcessor::continueUnless(
-    fn($traveler): bool => $traveler > 10
-  )->beforeEach(function ($traveler) use (&$tapResults) {
-    $tapResults[] = "before: $traveler";
-  });
+    fn($traveler): bool => $traveler > 10,
+    function ($traveler) use (&$tapResults) {
+      $tapResults[] = "before: $traveler";
+    }
+  );
 
   $result = $processor->process(5, ...$stages);
 
@@ -140,10 +148,11 @@ it('creates processor with continueUnless static method', function () use ($stag
 
 it('creates processor with continueWhen static method', function () use ($stages, &$tapResults) {
   $processor = InterruptibleTapProcessor::continueWhen(
-    fn($traveler): bool => $traveler < 100
-  )->beforeEach(function ($traveler) use (&$tapResults) {
-    $tapResults[] = "before: $traveler";
-  });
+    fn($traveler): bool => $traveler < 100,
+    function ($traveler) use (&$tapResults) {
+      $tapResults[] = "before: $traveler";
+    }
+  );
 
   $result = $processor->process(5, ...$stages);
 
@@ -153,7 +162,10 @@ it('creates processor with continueWhen static method', function () use ($stages
 
 it('updates before callback with beforeEach method', function () use ($stages, &$tapResults) {
   $processor = new InterruptibleTapProcessor(
-    fn($traveler): bool => $traveler > 1000
+    fn($traveler): bool => $traveler > 1000,
+    function ($traveler) use (&$tapResults) {
+      $tapResults[] = "original: $traveler";
+    }
   );
 
   $processor->beforeEach(function ($traveler) use (&$tapResults) {
@@ -168,7 +180,10 @@ it('updates before callback with beforeEach method', function () use ($stages, &
 
 it('updates after callback with afterEach method', function () use ($stages, &$tapResults) {
   $processor = new InterruptibleTapProcessor(
-    fn($traveler): bool => $traveler > 1000
+    fn($traveler): bool => $traveler > 1000,
+    function ($traveler) use (&$tapResults) {
+      $tapResults[] = "original: $traveler";
+    }
   );
 
   $processor->afterEach(function ($traveler) use (&$tapResults) {
@@ -178,14 +193,25 @@ it('updates after callback with afterEach method', function () use ($stages, &$t
   $result = $processor->process(5, ...$stages);
 
   expect($result)->toBe(700);
-  expect($tapResults)->toBe(['after: 7', 'after: 70', 'after: 700']);
+  expect($tapResults)->toBe([
+    'original: 5',
+    'after: 7',
+    'original: 7',
+    'after: 70',
+    'original: 70',
+    'after: 700'
+  ]);
 });
 
 it('chains method calls fluently', function () use ($stages, &$tapResults) {
-  $processor = InterruptibleTapProcessor::continueUnless(fn($traveler): bool => $traveler > 50)
-    ->beforeEach(function ($traveler) use (&$tapResults) {
-      $tapResults[] = "before: $traveler";
-    })
+  $processor = InterruptibleTapProcessor::continueUnless(
+    fn($traveler): bool => $traveler > 50,
+    function ($traveler) use (&$tapResults) {
+      $tapResults[] = "initial: $traveler";
+    }
+  )->beforeEach(function ($traveler) use (&$tapResults) {
+    $tapResults[] = "before: $traveler";
+  })
     ->afterEach(function ($traveler) use (&$tapResults) {
       $tapResults[] = "after: $traveler";
     });
@@ -262,7 +288,7 @@ it('processes all stages when interrupt condition never met', function () use ($
 
 it('returns correct values with array destructuring', function () use (&$tapResults) {
   $processor = new InterruptibleTapProcessor(
-    fn($traveler): bool => $traveler >= 15,
+    fn($traveler): bool => $traveler >= 15,  // Changed to >= so it interrupts at 15
     function ($traveler) use (&$tapResults) {
       $tapResults[] = "start: $traveler";
     },
