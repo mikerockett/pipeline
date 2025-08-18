@@ -31,12 +31,17 @@
       "Rockett\\Pipeline\\": "src"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  },
   "require": {
-    "php": "^8.2"
+    "php": "^8.3"
   },
   "require-dev": {
-    "nunomaduro/collision": "^8.4",
-    "pestphp/pest": "^2.35"
+    "nunomaduro/collision": "^8.0",
+    "pestphp/pest": "^3.0"
   },
   "scripts": {
     "test": "./vendor/bin/pest"

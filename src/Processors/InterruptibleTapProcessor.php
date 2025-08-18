@@ -7,23 +7,33 @@ namespace Rockett\Pipeline\Processors;
 use InvalidArgumentException;
 
 /**
- * Based on the result of a callback, this processor allows the pipeline
- * to be interrupted (equivalent of returning early).
+ * Combines the InterruptipleProcess and TapProcessor.
  *
  * @template T
  * @implements ProcessorContract<T>
  */
-class InterruptibleProcessor implements ProcessorContract
+class InterruptibleTapProcessor implements ProcessorContract
 {
   private bool $inverseCallbackOutcome = false;
 
   /**
    * @param callable|null $beforeCallback Callback that may interrupt processing
    */
-  public function __construct(private mixed $callback)
-  {
-    if (!is_callable($callback)) {
+  public function __construct(
+    private mixed $interruptCallback,
+    private mixed $beforeCallback = null,
+    private mixed $afterCallback = null,
+  ) {
+    if (!is_callable($interruptCallback)) {
       throw new InvalidArgumentException('$callback must be callable');
+    }
+
+    if ($beforeCallback && !is_callable($beforeCallback)) {
+      throw new InvalidArgumentException('$beforeCallback must be callable');
+    }
+
+    if ($afterCallback && !is_callable($afterCallback)) {
+      throw new InvalidArgumentException('$afterCallback must be callable');
     }
   }
 
@@ -35,6 +45,20 @@ class InterruptibleProcessor implements ProcessorContract
   public static function continueWhen(callable $callback): self
   {
     return (new static($callback))->withInversedConditioner();
+  }
+
+  public function beforeEach(callable $callback): self
+  {
+    $this->beforeCallback = $callback;
+
+    return $this;
+  }
+
+  public function afterEach(callable $callback): self
+  {
+    $this->afterCallback = $callback;
+
+    return $this;
   }
 
   public function withInversedConditioner(): self
@@ -51,9 +75,23 @@ class InterruptibleProcessor implements ProcessorContract
    */
   public function process($traveler, callable ...$stages)
   {
+    [$before, $after] = [
+      $this->beforeCallback,
+      $this->afterCallback,
+    ];
+
     foreach ($stages as $stage) {
+      if ($before) {
+        $before($traveler);
+      }
+
       $traveler = $stage($traveler);
-      $callbackOutcome = ($this->callback)($traveler);
+
+      if ($after) {
+        $after($traveler);
+      }
+
+      $callbackOutcome = ($this->interruptCallback)($traveler);
 
       $outcomeIsTruthy = match ($this->inverseCallbackOutcome) {
         true => !$callbackOutcome,

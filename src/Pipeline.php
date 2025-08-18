@@ -13,13 +13,11 @@ use Rockett\Pipeline\Processors\{FingersCrossedProcessor, ProcessorContract};
  */
 class Pipeline implements PipelineContract
 {
-  private ProcessorContract $processor;
-
   /** @var callable[] */
   private array $stages;
 
   public function __construct(
-    ?ProcessorContract $processor = null,
+    private ProcessorContract|null $processor = null,
     callable ...$stages
   ) {
     $this->processor = $processor ?? new FingersCrossedProcessor();

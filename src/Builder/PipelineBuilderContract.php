@@ -10,5 +10,5 @@ use Rockett\Pipeline\Processors\ProcessorContract;
 interface PipelineBuilderContract
 {
   public function add(callable $stage): PipelineBuilderContract;
-  public function build(ProcessorContract $processor = null): PipelineContract;
+  public function build(ProcessorContract|null $processor = null): PipelineContract;
 }

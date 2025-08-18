@@ -4,21 +4,38 @@ declare(strict_types=1);
 
 namespace Rockett\Pipeline\Processors;
 
+use InvalidArgumentException;
+
 /**
+ * Apply callbacks to run before and/or after each stage.
+ *
  * @template T
  * @implements ProcessorContract<T>
  */
 class TapProcessor implements ProcessorContract
 {
-  private $beforeCallback;
-  private $afterCallback;
-
+  /**
+   * @param callable|null $beforeCallback Callback to execute before processing each stage
+   * @param callable|null $afterCallback Callback to execute after processing each stage
+   * @throws InvalidArgumentException
+   */
   public function __construct(
-    callable $beforeCallback = null,
-    callable $afterCallback = null
+    private mixed $beforeCallback = null,
+    private mixed $afterCallback = null,
   ) {
-    $this->beforeCallback = $beforeCallback;
-    $this->afterCallback = $afterCallback;
+    if ($beforeCallback === null && $afterCallback === null) {
+      throw new InvalidArgumentException(
+        'At least one of $beforeCallback and $afterCallback must be provided'
+      );
+    }
+
+    if ($beforeCallback && !is_callable($beforeCallback)) {
+      throw new InvalidArgumentException('$beforeCallback must be callable');
+    }
+
+    if ($afterCallback && !is_callable($afterCallback)) {
+      throw new InvalidArgumentException('$afterCallback must be callable');
+    }
   }
 
   public function beforeEach(callable $callback): self
@@ -30,7 +47,7 @@ class TapProcessor implements ProcessorContract
 
   public function afterEach(callable $callback): self
   {
-    $this->beforeCallback = $callback;
+    $this->afterCallback = $callback;
 
     return $this;
   }
@@ -42,18 +59,20 @@ class TapProcessor implements ProcessorContract
    */
   public function process($traveler, callable ...$stages)
   {
-    $beforeCallback = $this->beforeCallback;
-    $afterCallback = $this->afterCallback;
+    [$before, $after] = [
+      $this->beforeCallback,
+      $this->afterCallback,
+    ];
 
     foreach ($stages as $stage) {
-      if ($beforeCallback) {
-        $beforeCallback($traveler);
+      if ($before) {
+        $before($traveler);
       }
 
       $traveler = $stage($traveler);
 
-      if ($afterCallback) {
-        $afterCallback($traveler);
+      if ($after) {
+        $after($traveler);
       }
     }
 
