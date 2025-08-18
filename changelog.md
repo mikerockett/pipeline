@@ -4,7 +4,7 @@
 
 ### Added
 
-* `InterruptipleTapProcessor`, which implements both `InterruptipleProcessor` and `TapProcessor`
+* `InterruptibleTapProcessor`, which implements both `InterruptibleProcessor` and `TapProcessor`
 * Added generic typing information across the package
 
 ### Changed

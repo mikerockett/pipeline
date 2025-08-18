@@ -7,7 +7,7 @@ namespace Rockett\Pipeline\Processors;
 use InvalidArgumentException;
 
 /**
- * Combines the InterruptipleProcess and TapProcessor.
+ * Combines the InterruptibleProcess and TapProcessor.
  *
  * @template T
  * @implements ProcessorContract<T>
