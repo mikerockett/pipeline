@@ -9,7 +9,7 @@ jobs:
       matrix:
         os: [php8.3, php8.4]
 
-    name: Test
+    name: Test (${{ matrix.os }})
 
     steps:
       - name: Checkout
