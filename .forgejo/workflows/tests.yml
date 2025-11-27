@@ -1,0 +1,35 @@
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  tests:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['8.3', '8.4']
+    container:
+      image: php:${{ matrix.php-version }}-cli-alpine
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install Composer
+        run: curl -sS https://getcomposer.org/installer | php
+
+      - name: Restore cached vendor directory
+        uses: actions/cache@v4
+        with:
+          path: vendor/
+          key: pipeline-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            pipeline-composer-
+
+      - name: Install PHP dependencies
+        run: composer install -qo
+
+      - name: Run tests
+        run: vendor/bin/pest
