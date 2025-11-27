@@ -30,7 +30,7 @@ jobs:
             pipeline-composer-
 
       - name: Install PHP dependencies
-        run: composer install -qo
+        run: php composer.phar install -qo
 
       - name: Run tests
         run: vendor/bin/pest
