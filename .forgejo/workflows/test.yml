@@ -1,0 +1,28 @@
+name: tests
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  tests:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - 'php-8.3-cli'
+          - 'php-8.4-cli'
+
+    name: Test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install dependencies
+        uses: ramsey/composer-install@v3
+        with:
+          composer-options: '--prefer-dist --no-cache'
+
+      - name: Run tests
+        run: vendor/bin/pest
