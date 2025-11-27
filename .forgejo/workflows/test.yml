@@ -1,17 +1,13 @@
 name: tests
 
-on:
-  - push
-  - pull_request
+on: [push, pull_request]
 
 jobs:
   tests:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os:
-          - 'php-8.3-cli'
-          - 'php-8.4-cli'
+        os: [php8.3, php8.4]
 
     name: Test
 
