@@ -7,16 +7,15 @@ namespace Rockett\Pipeline\Processors;
 use InvalidArgumentException;
 
 /**
- * Apply callbacks to run before and/or after each stage.
- *
  * @template T
  * @implements ProcessorContract<T>
+ * @deprecated 4.1.0 Use Processor instead with beforeEach() and/or afterEach() methods
  */
 class TapProcessor implements ProcessorContract
 {
   /**
-   * @param callable|null $beforeCallback Callback to execute before processing each stage
-   * @param callable|null $afterCallback Callback to execute after processing each stage
+   * @param callable(T): void|null $beforeCallback
+   * @param callable(T): void|null $afterCallback
    * @throws InvalidArgumentException
    */
   public function __construct(
@@ -38,6 +37,9 @@ class TapProcessor implements ProcessorContract
     }
   }
 
+  /**
+   * @param callable(T): void $callback
+   */
   public function beforeEach(callable $callback): self
   {
     $this->beforeCallback = $callback;
@@ -45,6 +47,9 @@ class TapProcessor implements ProcessorContract
     return $this;
   }
 
+  /**
+   * @param callable(T): void $callback
+   */
   public function afterEach(callable $callback): self
   {
     $this->afterCallback = $callback;
@@ -54,7 +59,7 @@ class TapProcessor implements ProcessorContract
 
   /**
    * @param T $traveler
-   * @param callable ...$stages
+   * @param callable(T): T ...$stages
    * @return T
    */
   public function process($traveler, callable ...$stages)

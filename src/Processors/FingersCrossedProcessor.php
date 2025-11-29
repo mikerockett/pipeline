@@ -12,7 +12,7 @@ class FingersCrossedProcessor implements ProcessorContract
 {
   /**
    * @param T $traveler
-   * @param callable ...$stages
+   * @param callable(T): T ...$stages
    * @return T
    */
   public function process($traveler, callable ...$stages)

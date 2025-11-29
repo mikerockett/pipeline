@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+/**
+ * @deprecated TapProcessor is deprecated. Use Processor instead.
+ */
+
 use Rockett\Pipeline\Processors\ProcessorContract;
 use Rockett\Pipeline\Processors\TapProcessor;
 

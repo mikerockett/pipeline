@@ -13,9 +13,12 @@ use Rockett\Pipeline\Processors\{FingersCrossedProcessor, ProcessorContract};
  */
 class Pipeline implements PipelineContract
 {
-  /** @var callable[] */
+  /** @var array<callable(T): T> */
   private array $stages;
 
+  /**
+   * @param callable(T): T ...$stages
+   */
   public function __construct(
     private ProcessorContract|null $processor = null,
     callable ...$stages
@@ -24,10 +27,21 @@ class Pipeline implements PipelineContract
     $this->stages = $stages;
   }
 
+  /**
+   * @param callable(T): T $stage
+   */
   public function pipe(callable $stage): self
   {
     $pipeline = clone $this;
     $pipeline->stages[] = $stage;
+
+    return $pipeline;
+  }
+
+  public function withProcessor(ProcessorContract $processor): self
+  {
+    $pipeline = clone $this;
+    $pipeline->processor = $processor;
 
     return $pipeline;
   }

@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+/**
+ * @deprecated InterruptibleTapProcessor is deprecated. Use Processor instead.
+ */
+
 use Rockett\Pipeline\Processors\InterruptibleTapProcessor;
 use Rockett\Pipeline\Processors\ProcessorContract;
 

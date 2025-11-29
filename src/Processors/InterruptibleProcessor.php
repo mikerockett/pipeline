@@ -7,18 +7,16 @@ namespace Rockett\Pipeline\Processors;
 use InvalidArgumentException;
 
 /**
- * Based on the result of a callback, this processor allows the pipeline
- * to be interrupted (equivalent of returning early).
- *
  * @template T
  * @implements ProcessorContract<T>
+ * @deprecated 4.1.0 Use Processor instead with continueUnless() or continueWhen() methods
  */
 class InterruptibleProcessor implements ProcessorContract
 {
   private bool $inverseCallbackOutcome = false;
 
   /**
-   * @param callable|null $beforeCallback Callback that may interrupt processing
+   * @param callable(T): bool $callback
    */
   public function __construct(private mixed $callback)
   {
@@ -27,11 +25,17 @@ class InterruptibleProcessor implements ProcessorContract
     }
   }
 
+  /**
+   * @param callable(T): bool $callback
+   */
   public static function continueUnless(callable $callback): self
   {
     return new static($callback);
   }
 
+  /**
+   * @param callable(T): bool $callback
+   */
   public static function continueWhen(callable $callback): self
   {
     return (new static($callback))->withInversedConditioner();
@@ -46,7 +50,7 @@ class InterruptibleProcessor implements ProcessorContract
 
   /**
    * @param T $traveler
-   * @param callable ...$stages
+   * @param callable(T): T ...$stages
    * @return T
    */
   public function process($traveler, callable ...$stages)

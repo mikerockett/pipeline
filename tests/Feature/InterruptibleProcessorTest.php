@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+/**
+ * @deprecated InterruptibleProcessor is deprecated. Use Processor instead.
+ */
+
 use Rockett\Pipeline\Processors\InterruptibleProcessor;
 use Rockett\Pipeline\Processors\ProcessorContract;
 

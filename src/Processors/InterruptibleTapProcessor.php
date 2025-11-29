@@ -11,13 +11,16 @@ use InvalidArgumentException;
  *
  * @template T
  * @implements ProcessorContract<T>
+ * @deprecated 4.1.0 Use Processor instead with continueUnless()/continueWhen() and beforeEach()/afterEach() methods
  */
 class InterruptibleTapProcessor implements ProcessorContract
 {
   private bool $inverseCallbackOutcome = false;
 
   /**
-   * @param callable|null $beforeCallback Callback that may interrupt processing
+   * @param callable(T): bool $interruptCallback
+   * @param callable(T): void|null $beforeCallback
+   * @param callable(T): void|null $afterCallback
    */
   public function __construct(
     private mixed $interruptCallback,
@@ -43,6 +46,11 @@ class InterruptibleTapProcessor implements ProcessorContract
     }
   }
 
+  /**
+   * @param callable(T): bool $callback
+   * @param callable(T): void|null $beforeCallback
+   * @param callable(T): void|null $afterCallback
+   */
   public static function continueUnless(
     callable $callback,
     callable|null $beforeCallback = null,
@@ -55,6 +63,11 @@ class InterruptibleTapProcessor implements ProcessorContract
     );
   }
 
+  /**
+   * @param callable(T): bool $callback
+   * @param callable(T): void|null $beforeCallback
+   * @param callable(T): void|null $afterCallback
+   */
   public static function continueWhen(
     callable $callback,
     callable|null $beforeCallback = null,
@@ -67,6 +80,9 @@ class InterruptibleTapProcessor implements ProcessorContract
     ))->withInversedConditioner();
   }
 
+  /**
+   * @param callable(T): void $callback
+   */
   public function beforeEach(callable $callback): self
   {
     $this->beforeCallback = $callback;
@@ -74,6 +90,9 @@ class InterruptibleTapProcessor implements ProcessorContract
     return $this;
   }
 
+  /**
+   * @param callable(T): void $callback
+   */
   public function afterEach(callable $callback): self
   {
     $this->afterCallback = $callback;
@@ -90,7 +109,7 @@ class InterruptibleTapProcessor implements ProcessorContract
 
   /**
    * @param T $traveler
-   * @param callable ...$stages
+   * @param callable(T): T ...$stages
    * @return T
    */
   public function process($traveler, callable ...$stages)

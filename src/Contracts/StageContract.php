@@ -6,6 +6,7 @@ namespace Rockett\Pipeline\Contracts;
 
 /**
  * @template T
+ * @method bool condition(T $traveler)
  */
 interface StageContract
 {

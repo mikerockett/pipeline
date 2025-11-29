@@ -1,5 +1,22 @@
 # Changelog
 
+## 4.1.0 - 2025-11-29
+
+### Added
+
+* New unified `Processor` that combines all processor features into a single composable implementation
+
+### Deprecated
+
+* **InterruptibleProcessor** – use **Processor** with `continueUnless()`/`continueWhen()`
+* **TapProcessor** – use **Processor** with `beforeEach()`/`afterEach()`
+* **InterruptibleTapProcessor** – use **Processor** with combined methods
+
+### Changes
+
+* Updated `pestphp/pest` to `^4.0`
+* Simplified readme a bit
+
 ## 4.0.0 - 2025-08-18
 
 ### Added
