@@ -278,4 +278,4 @@ Pipeline is licensed under the permissive [MIT license](license.md).
 
 ## Contributing
 
-Contributions are welcome – if you have something to add to this package, or have found a bug, feel free to submit a merge request for review.
+Contributions are welcome – if you have something to add to this package, or have found a bug, feel free to submit a pull request for review.
