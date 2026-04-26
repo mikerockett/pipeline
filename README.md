@@ -274,7 +274,7 @@ composer test
 
 ## License
 
-Pipeline is a fork of [League\Pipeline] by Frank de Jonge. It is licensed under the ISC License, with the original code retaining its MIT License. See [license.md](license.md) for details.
+Pipeline is a fork of [League\Pipeline] by Frank de Jonge. It is licensed under the ISC License, with the original code retaining its MIT License. See [LICENSE.md](LICENSE.md) for details.
 
 ## Contributing
 
